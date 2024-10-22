@@ -7,23 +7,30 @@ export const CartSlice = createSlice({
   },
   reducers: {
     addItem: (state, action) => {
-      // Add the plant (product) to the items array
-      state.items.push(action.payload);
+      const { name, image, cost } = action.payload;
+      const existingItem = state.items.find(item => item.name === name);
+      if (existingItem) {
+        existingItem.quantity++;
+      } else {
+        state.items.push({ name, image, cost, quantity: 1 });
+      }
     },
     removeItem: (state, action) => {
-      // Filter out the item to remove it from the cart
-      state.items = state.items.filter(item => item.name !== action.payload.name);
+      // Remove item from the cart based on its name
+      state.items = state.items.filter(item => item.name !== action.payload);
     },
     updateQuantity: (state, action) => {
-      // Find the item and update its quantity
-      const item = state.items.find(item => item.name === action.payload.name);
-      if (item) {
-        item.quantity = action.payload.quantity;
+      const { name, quantity } = action.payload;
+      const itemToUpdate = state.items.find(item => item.name === name);
+      if (itemToUpdate) {
+        itemToUpdate.quantity = quantity; // Update item's quantity
       }
     },
   },
 });
 
+// Exporting the action creators to use in other components
 export const { addItem, removeItem, updateQuantity } = CartSlice.actions;
 
+// Exporting the reducer as default
 export default CartSlice.reducer;
