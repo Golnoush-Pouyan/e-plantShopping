@@ -1,16 +1,17 @@
-import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { addItem } from './CartSlice'; // Make sure this path is correct based on your project structure
-import './ProductList.css';
+import React, { useState } from 'react'; 
+import './ProductList.css'
 import CartItem from './CartItem';
+import { useDispatch } from 'react-redux'; // Import useDispatch
+import { addItem } from './CartSlice'; // Import addItem action
 
 function ProductList() {
-    const dispatch = useDispatch(); // Hook to access the dispatch function from Redux
-    const [showCart, setShowCart] = useState(false);
-    const [addedToCart, setAddedToCart] = useState({}); // State to track which products have been added to the cart
+    const [showCart, setShowCart] = useState(false); 
+    const [cart, setCart] = useState([]); 
+    const [addedToCart, setAddedToCart] = useState({}); 
+    const dispatch = useDispatch(); // Initialize the dispatch function
 
     const plantsArray = [
-        // Your existing plants array...
+        // your plants data here...
     ];
 
     const styleObj = {
@@ -19,7 +20,7 @@ function ProductList() {
         padding: '15px',
         display: 'flex',
         justifyContent: 'space-between',
-        alignItems: 'center', // Fix typo from alignIems to alignItems
+        alignItems: 'center',
         fontSize: '20px',
     };
 
@@ -46,18 +47,22 @@ function ProductList() {
         setShowCart(false);
     };
 
+    // Add plant to the cart and dispatch the action
+    const handleAddToCart = (plant) => {
+        // Dispatch the addItem action
+        dispatch(addItem(plant));
+
+        // Update addedToCart state to reflect that the plant has been added
+        setAddedToCart((prevState) => ({
+            ...prevState,
+            [plant.name]: true // Mark the plant as added
+        }));
+        alert(`${plant.name} has been added to the cart!`); // Optional alert to confirm
+    };
+
     const handleContinueShopping = (e) => {
         e.preventDefault();
         setShowCart(false);
-    };
-
-    const handleAddToCart = (plant) => {
-        dispatch(addItem(plant)); // Dispatch the action to add the item to the cart
-        setAddedToCart((prevState) => ({
-            ...prevState,
-            [plant.name]: true, // Set the product name as key and value as true to indicate it's added to cart
-        }));
-        console.log(`${plant.name} added to cart!`); // Optional: For debugging
     };
 
     return (
@@ -75,34 +80,40 @@ function ProductList() {
                     </div>
                 </div>
                 <div style={styleObjUl}>
-                    <div><a href="#" onClick={handlePlantsClick} style={styleA}>Plants</a></div>
-                    <div><a href="#" onClick={handleCartClick} style={styleA}>
+                    <div> <a href="#" onClick={(e) => handlePlantsClick(e)} style={styleA}>Plants</a></div>
+                    <div> <a href="#" onClick={(e) => handleCartClick(e)} style={styleA}>
                         <h1 className='cart'>
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" id="IconChangeColor" height="68" width="68">
-                                <rect width="156" height="156" fill="none"></rect>
-                                <circle cx="80" cy="216" r="12"></circle>
-                                <circle cx="184" cy="216" r="12"></circle>
-                                <path d="M42.3,72H221.7l-26.4,92.4A15.9,15.9,0,0,1,179.9,176H84.1a15.9,15.9,0,0,1-15.4-11.6L32.5,37.8A8,8,0,0,0,24.8,32H8" fill="none" stroke="#faf9f9" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" id="mainIconPathAttribute"></path>
-                            </svg>
+                            {/* Cart SVG */}
                         </h1>
                     </a></div>
                 </div>
             </div>
+
             {!showCart ? (
                 <div className="product-grid">
                     {plantsArray.map((category, index) => (
                         <div key={index}>
-                            <h1><div>{category.category}</div></h1>
+                            <h1>{category.category}</h1>
                             <div className="product-list">
                                 {category.plants.map((plant, plantIndex) => (
                                     <div className="product-card" key={plantIndex}>
                                         <img className="product-image" src={plant.image} alt={plant.name} />
                                         <div className="product-title">{plant.name}</div>
                                         <div className="product-description">{plant.description}</div>
-                                        <div className="product-cost">{plant.cost}</div>
-                                        <button className="product-button" onClick={() => handleAddToCart(plant)}>
-                                            {addedToCart[plant.name] ? "Added to Cart" : "Add to Cart"}
-                                        </button>
+                                        <div className="product-cost">Cost: {plant.cost}</div>
+
+                                        {addedToCart[plant.name] ? (
+                                            <button className="product-button" disabled>
+                                                Added
+                                            </button>
+                                        ) : (
+                                            <button 
+                                                className="product-button" 
+                                                onClick={() => handleAddToCart(plant)}
+                                            >
+                                                Add to Cart
+                                            </button>
+                                        )}
                                     </div>
                                 ))}
                             </div>
@@ -110,7 +121,7 @@ function ProductList() {
                     ))}
                 </div>
             ) : (
-                <CartItem onContinueShopping={handleContinueShopping} />
+                <CartItem onContinueShopping={handleContinueShopping} cartItems={cart} />
             )}
         </div>
     );
