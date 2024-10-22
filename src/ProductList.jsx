@@ -1,40 +1,24 @@
 import React, { useState } from 'react'; 
 import './ProductList.css'
 import CartItem from './CartItem';
-import { useDispatch } from 'react-redux'; // Import useDispatch
+import { useDispatch, useSelector } from 'react-redux'; // Import useDispatch and useSelector
 import { addItem } from './CartSlice'; // Import addItem action
 
 function ProductList() {
     const [showCart, setShowCart] = useState(false); 
-    const [cart, setCart] = useState([]); 
     const [addedToCart, setAddedToCart] = useState({}); 
+    const [totalQuantity, setTotalQuantity] = useState(0); // State for total quantity
     const dispatch = useDispatch(); // Initialize the dispatch function
+    const cartItems = useSelector(state => state.cart.items); // Get cart items from the Redux store
 
     const plantsArray = [
         // your plants data here...
     ];
 
-    const styleObj = {
-        backgroundColor: '#4CAF50',
-        color: '#fff!important',
-        padding: '15px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        fontSize: '20px',
-    };
-
-    const styleObjUl = {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        width: '1100px',
-    };
-
-    const styleA = {
-        color: 'white',
-        fontSize: '30px',
-        textDecoration: 'none',
+    // Update the total quantity
+    const updateCartCount = () => {
+        const quantity = cartItems.reduce((total, item) => total + item.quantity, 0);
+        setTotalQuantity(quantity);
     };
 
     const handleCartClick = (e) => {
@@ -49,14 +33,12 @@ function ProductList() {
 
     // Add plant to the cart and dispatch the action
     const handleAddToCart = (plant) => {
-        // Dispatch the addItem action
         dispatch(addItem(plant));
-
-        // Update addedToCart state to reflect that the plant has been added
         setAddedToCart((prevState) => ({
             ...prevState,
             [plant.name]: true // Mark the plant as added
         }));
+        updateCartCount(); // Update total quantity
         alert(`${plant.name} has been added to the cart!`); // Optional alert to confirm
     };
 
@@ -83,7 +65,7 @@ function ProductList() {
                     <div> <a href="#" onClick={(e) => handlePlantsClick(e)} style={styleA}>Plants</a></div>
                     <div> <a href="#" onClick={(e) => handleCartClick(e)} style={styleA}>
                         <h1 className='cart'>
-                            {/* Cart SVG */}
+                            Cart ({totalQuantity}) {/* Display total quantity */}
                         </h1>
                     </a></div>
                 </div>
@@ -116,12 +98,13 @@ function ProductList() {
                                         )}
                                     </div>
                                 ))}
+
                             </div>
                         </div>
                     ))}
                 </div>
             ) : (
-                <CartItem onContinueShopping={handleContinueShopping} cartItems={cart} />
+                <CartItem onContinueShopping={handleContinueShopping} updateCartCount={updateCartCount} />
             )}
         </div>
     );
